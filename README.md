@@ -15,7 +15,7 @@ go get github.com/Hkozacz/paynow-gosdk
 ```go
 import "github.com/Hkozacz/paynow-gosdk"
 
-client := paynow_sdk.NewPayNowApiClient("API_KEY", "API_SECRET", "https://api.paynow.pl/v1/")
+client := paynow_sdk.NewPayNowApiClient("API_KEY", "API_SECRET", "https://api.paynow.pl/v3/")
 ```
 
 ## Creating a Payment
