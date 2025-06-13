@@ -1,54 +1,50 @@
-package main
+package paynow_sdk
 
 import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 )
 
 // SignatureBody represents the structure for the signature calculation
 type SignatureBody struct {
-	Headers    Headers                `json:"headers"`
-	Parameters map[string]interface{} `json:"parameters"`
-	Body       string                 `json:"body"`
+	Headers    Headers             `json:"headers"`
+	Parameters map[string][]string `json:"parameters"`
+	Body       string              `json:"body"`
 }
 
 type Headers struct {
 	ApiKey         string `json:"Api-Key"`
-	IdempotencyKey string `json:"Idempotency-Key"`
+	IdempotencyKey string `json:"Idempotency-Key,omitempty"`
 }
 
-func GenerateV3(apiKey, signatureKey, idempotencyKey, data string, parameters map[string]interface{}) (string, error) {
+func GenerateV3(apiKey, signatureKey, idempotencyKey, data string, parameters map[string]string) (string, error) {
 	// Process parameters: convert single values to slices
-	parsedParameters := make(map[string]interface{})
+	parsedParameters := make(map[string][]string)
 	for key, value := range parameters {
-		switch v := value.(type) {
-		case []interface{}:
-			parsedParameters[key] = v
-		default:
-			parsedParameters[key] = []interface{}{v}
-		}
+		parsedParameters[key] = []string{value}
+
+	}
+	headers := Headers{
+		ApiKey: apiKey,
+	}
+	if idempotencyKey != "" {
+		headers.IdempotencyKey = idempotencyKey
 	}
 
 	// Create signature body
 	signatureBody := SignatureBody{
-		Headers: Headers{
-			ApiKey:         apiKey,
-			IdempotencyKey: idempotencyKey,
-		},
+		Headers:    headers,
 		Parameters: parsedParameters,
 		Body:       data,
 	}
-	fmt.Println(signatureBody)
 
 	// Marshal to JSON
 	message, err := json.Marshal(signatureBody)
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(string(message))
 
 	// Create HMAC signature
 	h := hmac.New(sha256.New, []byte(signatureKey))
