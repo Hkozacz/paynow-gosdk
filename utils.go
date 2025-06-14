@@ -53,3 +53,10 @@ func GenerateV3(apiKey, signatureKey, idempotencyKey, data string, parameters ma
 
 	return signature, nil
 }
+
+func ConfirmNotificationSignature(signatureKey, data string, signature string) (bool, error) {
+	h := hmac.New(sha256.New, []byte(signatureKey))
+	h.Write([]byte(data))
+	payloadSignature := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	return payloadSignature == signature, nil
+}
